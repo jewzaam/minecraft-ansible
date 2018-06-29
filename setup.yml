@@ -1,0 +1,15 @@
+# vim: autoindent:expandtab:sw=2:ts=2
+---
+- name: Setup all EC2 components.
+  hosts: localhost
+  tasks:
+  - name: Variables
+    include_vars:
+      file: vars/minecraft.yml
+      name: minecraft
+  - name: Create VPC
+    ec2_vpc_net:
+      state: present
+      cidr_block: "{{ minecraft.ec2.vpc.cidr }}"
+      name: "vpc_{{ minecraft.ec2.name }}"
+    register: vpc_endpoint

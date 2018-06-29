@@ -1,0 +1,10 @@
+# vim: autoindent:expandtab:sw=2:ts=2
+---
+# string used in all Name tags
+ec2:
+  vpc:
+    name: vpc_minecraft
+    cidr: 10.31.0.0/24
+    subnet:
+      name: subnet_minecraft_1
+      cidr: 10.31.1.0/28
