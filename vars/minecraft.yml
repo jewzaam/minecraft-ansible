@@ -2,9 +2,35 @@
 ---
 # string used in all Name tags
 ec2:
+  region: us-east-1
+  zone: us-east-1a
+
+  instance:
+    id: i_minecraft_4
+    name: i_minecraft
+    image: ami-b70554c8
+    type: t2.micro
+  eip:
+    name: eip_minecraft
+  key:
+    name: key_minecraft
+    pub_filename: ~/.ssh/id_rsa_minecraft.pub
   vpc:
     name: vpc_minecraft
     cidr: 10.31.0.0/24
     subnet:
       name: subnet_minecraft_1
-      cidr: 10.31.1.0/28
+      cidr: 10.31.0.0/28
+    group:
+      name: sg_minecraft
+      rules:
+        - proto: tcp
+          ports:
+            - 22
+          cidr_ip: 0.0.0.0/0
+          rule_desc: ssh
+        - proto: tcp
+          ports:
+            - 25565
+          cidr_ip: 0.0.0.0/0
+          rule_desc: minecraft inbound

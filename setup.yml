@@ -7,9 +7,108 @@
     include_vars:
       file: vars/minecraft.yml
       name: minecraft
+
+  # Network setup
   - name: Create VPC
     ec2_vpc_net:
       state: present
+      region: "{{ minecraft.ec2.region }}"
+      name: "{{ minecraft.ec2.vpc.name }}"
       cidr_block: "{{ minecraft.ec2.vpc.cidr }}"
-      name: "vpc_{{ minecraft.ec2.name }}"
-    register: vpc_endpoint
+    register: vpc_out
+  - name: Create Subnet
+    ec2_vpc_subnet:
+      state: present
+      region: "{{ minecraft.ec2.region }}"
+      vpc_id: "{{ vpc_out.vpc.id }}"
+      cidr: "{{ minecraft.ec2.vpc.subnet.cidr }}"
+      az: "{{ minecraft.ec2.zone }}"
+      tags:
+        Name: "{{ minecraft.ec2.vpc.subnet.name }}"
+    register: subnet_out
+  - name: Create Internet Gateway
+    ec2_vpc_igw:
+      state: present
+      region: "{{ minecraft.ec2.region }}"
+      vpc_id: "{{ vpc_out.vpc.id }}"
+    register: igw_out
+  - name: Manage Route Table
+    ec2_vpc_route_table:
+      state: present
+      region: "{{ minecraft.ec2.region }}"
+      vpc_id: "{{ vpc_out.vpc.id }}"
+      subnets:
+        - "{{ subnet_out.subnet.id }}"
+      routes:
+        - dest: 0.0.0.0/0
+          gateway_id: "{{ igw_out.gateway_id }}"
+      tags:
+        Name: "{{ minecraft.ec2.vpc.subnet.name }}"
+  - name: Create Security Group
+    ec2_group:
+      state: present
+      region: "{{ minecraft.ec2.region }}"
+      vpc_id: "{{ vpc_out.vpc.id }}"
+      name: "{{ minecraft.ec2.vpc.group.name }}"
+      description: "Minecraft server security group, allows ssh and inbound server traffic"
+      rules: "{{ minecraft.ec2.vpc.group.rules }}"
+      tags:
+        Name: "{{ minecraft.ec2.vpc.group.name }}"
+    register: group_out
+
+  # Instance setup
+  - name: Create keypair
+    ec2_key:
+      state: present
+      name: "{{ minecraft.ec2.key.name }}"
+      key_material: "{{ lookup('file', minecraft.ec2.key.pub_filename) }}"
+    register: key_out
+
+  - name: Create instance
+    ec2:
+      state: present
+      region: "{{ minecraft.ec2.region }}"
+      assign_public_ip: yes
+      count: 1
+      group_id: "{{ group_out.group_id }}"
+      id: "{{ minecraft.ec2.instance.id }}"
+      image: "{{ minecraft.ec2.instance.image }}"
+      instance_type: "{{ minecraft.ec2.instance.type }}"
+      key_name: "{{ minecraft.ec2.key.name }}"
+      termination_protection: yes
+      vpc_subnet_id: "{{ subnet_out.subnet.id }}"
+      zone: "{{ minecraft.ec2.zone }}"
+    register: instance_out
+  - name: Tag instance
+    ec2_tag:
+      state: present
+      region: "{{ minecraft.ec2.region }}"
+      resource: "{{ item }}"
+      tags:
+        Name: "{{ minecraft.ec2.instance.name }}"
+    with_items: "{{ instance_out.instance_ids }}"
+
+  # ec2_eip is NOT idempotent, so be careful
+  # have to wait for instance to be in a state that can be attached
+  - name: Wait for instance to start
+    wait_for:
+      port: 22
+      host: "{{ item.public_ip }}"
+      delay: 10
+    with_items: "{{ instance_out.instances }}"
+    when: instance_out.changed
+  - name: Create EIP for server
+    ec2_eip:
+      state: present
+      region: "{{ minecraft.ec2.region }}"
+      device_id: "{{ item }}"
+    with_items: "{{ instance_out.instance_ids }}"
+    when: instance_out.changed
+    register: eip_out
+  - name: Tag EIP
+    ec2_tag:
+      state: present
+      region: "{{ minecraft.ec2.region }}"
+      resource: "{{ eip_out.allocation_id }}"
+      tags:
+        Name: "{{ minecraft.ec2.eip.name }}"
