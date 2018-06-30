@@ -116,3 +116,13 @@
         Name: "{{ minecraft.ec2.eip.name }}"
     with_items: "{{ eip_out.results }}"
     when: eip_out is defined and eip_out.changed
+  - name: Set public_ip var from EIP data (else was already set from instance data)
+    set_fact:
+      public_ip: "{{ item.public_ip }}"
+    with_items: "{{ eip_out.results }}"
+    when: eip_out is defined and eip_out.changed
+
+  - name: Write inventory file
+    copy:
+      content: "{{ public_ip }}"
+      dest: .inventory

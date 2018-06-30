@@ -4,6 +4,7 @@
 ## Prereqs
 
 ```
+sudo dnf install ansible libselinux-python -y
 pip install awscli --upgrade --user
 pip install boto --upgrade --user
 pip install boto3 --upgrade --user
@@ -18,8 +19,14 @@ aws configure
 ## Create Server
 
 ```
-ansible-playbook setup.yml
+ansible-playbook create.yml
 ```
+
+Will create an inventory file `.inventory` for use with server setup.  If this file is deleted it will be recreated.
+
+## Setup Minecraft
+
+TODO
 
 ## Teardown Server
 
