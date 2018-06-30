@@ -1,6 +1,15 @@
 # vim: autoindent:expandtab:sw=2:ts=2
 ---
-# string used in all Name tags
+server:
+  user: minecraft
+  group: minecraft
+  directory: /var/minecraft/server
+  jar:
+    # see https://minecraft.net/en-us/download/server
+    url: https://launcher.mojang.com/mc/game/1.12.2/server/886945bfb2b978778c3a0288fd7fab09d315b25f/server.jar
+    filename: server.jar
+    version: 1.12.2
+
 ec2:
   region: us-east-1
   zone: us-east-1a

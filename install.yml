@@ -1,0 +1,42 @@
+# vim: autoindent:expandtab:sw=2:ts=2
+---
+- name: Install Minecraft
+  hosts: all
+  become: yes
+  tasks:
+  - name: Variables
+    include_vars:
+      file: vars/minecraft.yml
+      name: minecraft
+
+  - name: Create group
+    group:
+      state: present
+      name: "{{ minecraft.server.group }}"
+  - name: Create user
+    user:
+      state: present
+      create_home: no
+      name: "{{ minecraft.server.user }}"
+      group: "{{ minecraft.server.group }}"
+  - name: Make the minecraft directory
+    file:
+      state: directory
+      path: "{{ minecraft.server.directory }}"
+      owner: "{{ minecraft.server.user }}"
+      group: "{{ minecraft.server.group }}"
+  - name: Get the jar
+    get_url:
+      dest: "{{ minecraft.server.directory }}/{{ minecraft.server.jar.filename }}"
+      owner: "{{ minecraft.server.user }}"
+      group: "{{ minecraft.server.group }}"
+      url: "{{ minecraft.server.jar.url }}"
+  - name: Write version file
+    copy:
+      content: "{{ minecraft.server.jar.version }}"
+      dest: "{{ minecraft.server.directory}}/minecraft-version"
+      owner: "{{ minecraft.server.user }}"
+      group: "{{ minecraft.server.group }}"
+
+#  - name: Start the server
+
