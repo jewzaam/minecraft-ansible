@@ -24,6 +24,12 @@ ansible-playbook create.yml
 
 Will create an inventory file `.inventory` for use with server setup.  If this file is deleted it will be recreated.
 
+### Test Inventory File
+
+```
+ansible -i .inventory all -a "/bin/echo success"
+```
+
 ## Setup Minecraft
 
 TODO
