@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# created this in a bash script so we don't have to reload systemd if it changes
+
+pushd /var/minecraft/server
+/usr/bin/java -Xmx{{ java_Xmx }} -Xms{{ java_Xms }} -jar {{ server_jar }} nogui
+

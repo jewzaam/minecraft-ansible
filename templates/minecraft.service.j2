@@ -1,0 +1,29 @@
+[Unit]
+Description=Minecraft Server
+Documentation=
+
+Wants=network.target
+After=network.target
+
+[Service]
+User=minecraft
+Group=minecraft
+Nice=5
+EnvironmentFile=-/var/minecraft/unit.conf
+KillMode=none
+SuccessExitStatus=0 1
+
+ProtectHome=true
+ProtectSystem=full
+PrivateDevices=true
+NoNewPrivileges=true
+PrivateTmp=true
+InaccessibleDirectories=/root /sys /srv -/opt /media -/lost+found
+ReadWriteDirectories={{ minecraft.server.directory }}
+WorkingDirectory={{ minecraft.server.directory }}
+ExecStart={{ minecraft.server.directory }}/start.sh
+ExecStop=pkill -9 -f java
+
+[Install]
+WantedBy=multi-user.target
+

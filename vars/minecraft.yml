@@ -1,14 +1,49 @@
 # vim: autoindent:expandtab:sw=2:ts=2
 ---
+vanilla:
+  # see https://minecraft.net/en-us/download/server
+  url: https://launcher.mojang.com/mc/game/1.12.2/server/886945bfb2b978778c3a0288fd7fab09d315b25f/server.jar
+  filename: minecraft_server.1.12.2.jar
+  symlink: server.jar
+forge:
+  installer:
+    # get URL from mouseover "installer" on http://files.minecraftforge.net/
+    url: https://files.minecraftforge.net/maven/net/minecraftforge/forge/1.12.2-14.23.4.2725/forge-1.12.2-14.23.4.2725-installer.jar
+    filename: forge-installer.jar
+  server:
+    # filename must be the file that installed. (s/installer/universal/g basically)
+    filename: forge-1.12.2-14.23.4.2725-universal.jar
+    symlink: forge.jar
+  mods:
+    - name: Apple Skin
+      url: https://www.dropbox.com/sh/9h4jwinawo0sc2g/AAAB9Q70us9No3KHIJb56Fr4a/minecraft/mods/server/AppleSkin-mc1.12-1.0.9.jar?dl=0
+    - name: Biomes O Plenty
+      url: https://www.dropbox.com/sh/9h4jwinawo0sc2g/AABeKiHpql0vbB-3V0ZwALgXa/minecraft/mods/server/BiomesOPlenty-1.12.2-7.0.1.2391-universal.jar?dl=0
+    - name: Fast Leaf Decay
+      url: https://www.dropbox.com/sh/9h4jwinawo0sc2g/AAB3gGdauTVNHM09Ow4ENJ7na/minecraft/mods/server/FastLeafDecay-v14.jar?dl=0
+    - name: Inventory Tweaks
+      url: https://www.dropbox.com/sh/9h4jwinawo0sc2g/AACdYgttp8MzTGAUl8OsqCwba/minecraft/mods/server/InventoryTweaks-1.64-dev.jar?dl=0
+    - name: Journey Map
+      url: https://www.dropbox.com/sh/9h4jwinawo0sc2g/AADl_qMpYWr5pwKrTrMHqECta/minecraft/mods/server/JourneyMap-Mod-1.12.2-Unlimited.jar?dl=0
+    - name: Mantle
+      url: https://www.dropbox.com/sh/9h4jwinawo0sc2g/AACF0WdCm0l5ZIavT8QCFrUUa/minecraft/mods/server/Mantle-Mod-1.12.2.jar?dl=0
+    - name: Tinkers Construct
+      url: https://www.dropbox.com/sh/9h4jwinawo0sc2g/AABHVAXZv6r6rqz9MPxLCqboa/minecraft/mods/server/Tinkers-Construct-Mod-1.12.2.jar?dl=0
+
 server:
   user: minecraft
   group: minecraft
   directory: /var/minecraft/server
-  jar:
-    # see https://minecraft.net/en-us/download/server
-    url: https://launcher.mojang.com/mc/game/1.12.2/server/886945bfb2b978778c3a0288fd7fab09d315b25f/server.jar
-    filename: server.jar
-    version: 1.12.2
+  version: 1.12.2
+  # type can be vanilla or forge
+  # note the scripts do not handle changing from forge back to vanilla
+  type: forge
+  # you need to change this to whoever you want to alwasy be op, if any (you can remove otherwise)
+  op:
+    name: jewzaam
+    # https://mcuuid.net/?q=jewzaam
+    uuid: c494ab34-d9e9-4d02-867c-a3f52702840e
+    level: 4
 
 ec2:
   region: us-east-1
@@ -18,7 +53,7 @@ ec2:
     id: i_minecraft_9
     name: i_minecraft
     image: ami-b70554c8
-    type: t2.micro
+    type: t2.small
   eip:
     name: eip_minecraft
   key:

@@ -8,7 +8,13 @@
     include_vars:
       file: vars/minecraft.yml
       name: minecraft
+    tags:
+      - test
 
+  - name: Install java
+    package:
+      state: present
+      name: java-1.8.0-openjdk-headless
   - name: Create group
     group:
       state: present
@@ -16,27 +22,170 @@
   - name: Create user
     user:
       state: present
-      create_home: no
+      create_home: yes
+      home: /var/minecraft/server/
       name: "{{ minecraft.server.user }}"
       group: "{{ minecraft.server.group }}"
-  - name: Make the minecraft directory
-    file:
-      state: directory
-      path: "{{ minecraft.server.directory }}"
+      
+  - name: Check for ops.json
+    stat:
+      path: "{{ minecraft.server.directory }}/ops.json"
+    register: ops_json
+  - name: Setup first op user (can reset this by removing the file and running again)
+    template:
+      src: templates/ops.json.j2
+      dest: "{{ minecraft.server.directory }}/ops.json"
       owner: "{{ minecraft.server.user }}"
       group: "{{ minecraft.server.group }}"
-  - name: Get the jar
-    get_url:
-      dest: "{{ minecraft.server.directory }}/{{ minecraft.server.jar.filename }}"
-      owner: "{{ minecraft.server.user }}"
-      group: "{{ minecraft.server.group }}"
-      url: "{{ minecraft.server.jar.url }}"
-  - name: Write version file
-    copy:
-      content: "{{ minecraft.server.jar.version }}"
-      dest: "{{ minecraft.server.directory}}/minecraft-version"
-      owner: "{{ minecraft.server.user }}"
-      group: "{{ minecraft.server.group }}"
+      mode: 0644
+    when:
+      - minecraft.server.op is defined
+      - not ops_json.stat.exists
 
-#  - name: Start the server
+  - name: Check for file created when minecraft server starts
+    stat:
+      path: "{{ minecraft.server.directory }}/server.properties"
+    register: server_properties
+  - name: Initial vanilla
+    block:
+      - name: Stop any java processes (in case this isn't a clean install)
+        shell: "pkill -9 -f java"
+        ignore_errors: yes
+      - name: Make the minecraft directory
+        file:
+          state: directory
+          path: "{{ minecraft.server.directory }}"
+          owner: "{{ minecraft.server.user }}"
+          group: "{{ minecraft.server.group }}"
+      - name: Get server jar
+        get_url:
+          dest: "{{ minecraft.server.directory }}/{{ minecraft.vanilla.filename }}"
+          owner: "{{ minecraft.server.user }}"
+          group: "{{ minecraft.server.group }}"
+          url: "{{ minecraft.vanilla.url }}"
+      - name: Write version file
+        copy:
+          content: "{{ minecraft.server.version }}"
+          dest: "{{ minecraft.server.directory}}/minecraft-version"
+          owner: "{{ minecraft.server.user }}"
+          group: "{{ minecraft.server.group }}"
+      - name: Write eula
+        copy:
+          content: "eula=true"
+          dest: "{{ minecraft.server.directory }}/eula.txt"
+          owner: "{{ minecraft.server.user }}"
+          group: "{{ minecraft.server.group }}"
+      - name: Start the server (will fail because we'll kill it)
+        command: "java -jar {{ minecraft.vanilla.filename }}"
+        become: yes
+        become_user: "{{ minecraft.server.user }}"
+        async: 15
+        poll: 1
+        ignore_errors: yes
+      - name: "Create {{ minecraft.vanilla.symlink }} symlink"
+        file:
+          state: link
+          src: "{{ minecraft.vanilla.filename }}"
+          dest: "{{ minecraft.vanilla.symlink }}"
+        become: yes
+        become_user: "{{ minecraft.server.user }}"
+    when: not server_properties.stat.exists
+
+  - name: Find {{ minecraft.forge.server.symlink }} (symlink)
+    stat:
+      path: "{{ minecraft.server.directory }}/{{ minecraft.forge.server.symlink }}"
+    register: forge_jar
+
+  - name: Install forge
+    block:
+      - name: Get forge-installer jar
+        get_url:
+          dest: "{{ minecraft.server.directory }}/{{ minecraft.forge.installer.filename }}"
+          owner: "{{ minecraft.server.user }}"
+          group: "{{ minecraft.server.group }}"
+          url: "{{ minecraft.forge.installer.url }}"
+        register: forge_installer
+      - name: Run forge installer
+        command: "java -jar {{ forge_installer.dest }} --installServer"
+        become: yes
+        become_user: "{{ minecraft.server.user }}"
+      - name: Remove forge installer
+        file:
+          state: absent
+          path: "{{ forge_installer.dest }}"
+      - name: Remove forge installer log
+        file:
+          state: absent
+          path: "{{ forge_installer.dest }}.log"
+      - name: "Create {{ minecraft.forge.server.symlink }} symlink"
+        file:
+          state: link
+          src: "{{ minecraft.forge.server.filename }}"
+          dest: "{{ minecraft.forge.server.symlink }}"
+        become: yes
+        become_user: "{{ minecraft.server.user }}"
+    when:
+      - not forge_jar.stat.exists
+      - minecraft.server.type == "forge"
+
+  - name: Setup forge mods
+    block:
+      - name: Install Mods
+        get_url:
+          dest: "{{ minecraft.server.directory }}/mods
+          owner: "{{ minecraft.server.user }}"
+          group: "{{ minecraft.server.group }}"
+          url: "{{ item.url }}"
+        with_items: minecraft.server.mods
+    when:
+      - minecraft.server.type == "forge"
+
+  - name: Find {{ minecraft.forge.server.symlink }} (symlink) [again]
+    stat:
+      path: "{{ minecraft.server.directory }}/{{ minecraft.forge.server.symlink }}"
+    register: forge_jar
+
+  - name: Set server jar to forge
+    set_fact:
+      server_jar: "{{ minecraft.forge.server.symlink }}"
+    when: forge_jar.stat.exists
+
+  - name: Set server jar to vanilla
+    set_fact:
+      server_jar: "{{ minecraft.vanilla.symlink }}"
+    when: server_jar is not defined
+
+  - name: Setup server
+    block:
+      - name: Collect server stats
+        setup:
+      - name: Set java memory facts
+        set_fact:
+          java_Xmx: "{{ (ansible_facts.memory_mb.real.total*0.8)|int|abs }}M"
+          java_Xms: "{{ (ansible_facts.memory_mb.real.total*0.5)|int|abs }}M"
+      - name: Create start.sh
+        template:
+          src: templates/start.sh.j2
+          dest: "{{ minecraft.server.directory }}/start.sh"
+          owner: "{{ minecraft.server.user }}"
+          group: "{{ minecraft.server.group }}"
+          mode: 0744
+      - name: Create system service
+        template:
+          src: templates/minecraft.service.j2
+          dest: "/etc/systemd/system/minecraft.service"
+          mode: 0644
+      - name: Start minecraft service
+        service:
+          name: minecraft
+          enabled: yes
+          state: started
+
+
+
+
+
+
+
+
 
