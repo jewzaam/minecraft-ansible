@@ -1,0 +1,45 @@
+# vim: autoindent:expandtab:sw=2:ts=2
+---
+- name: Destroy all EC2 components.
+  hosts: localhost
+  tasks:
+  - name: Variables
+    include_vars:
+      file: vars/minecraft.yml
+      name: minecraft
+
+  - name: Find Instance
+    ec2_instance_facts:
+      region: "{{ minecraft.ec2.region }}"
+      filters:
+        "tag:Name": "{{ minecraft.ec2.instance.name }}"
+    register: instance_out
+    ignore_errors: yes
+
+  - name: Terminate Instance and Release EIP
+    block:
+      - name: Release EIP
+        ec2_eip:
+          state: absent
+          region: "{{ minecraft.ec2.region }}"
+          device_id: "{{ item.instance_id }}"
+          release_on_disassociation: yes
+        with_items: "{{ instance_out.instances }}"
+      - name: Disable termination protection
+        ec2:
+          state: "{{ item.state.name }}"
+          region: "{{ minecraft.ec2.region }}"
+          termination_protection: no
+          instance_ids: "{{ item.instance_id }}"
+        when: "item.state.name != 'terminated'"
+        with_items: "{{ instance_out.instances }}"
+      - name: Terminate Instance
+        ec2_instance:
+          state: absent
+          region: "{{ minecraft.ec2.region }}"
+          instance_ids: "{{ item.instance_id }}"
+        when: "item.state.name != 'terminated'"
+        with_items: "{{ instance_out.instances }}"
+    when: instance_out is defined
+
+

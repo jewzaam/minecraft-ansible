@@ -68,7 +68,7 @@
     ec2:
       state: present
       region: "{{ minecraft.ec2.region }}"
-      assign_public_ip: yes
+      assign_public_ip: no
       count: 1
       group_id: "{{ group_out.group_id }}"
       id: "{{ minecraft.ec2.instance.id }}"
@@ -87,28 +87,32 @@
       tags:
         Name: "{{ minecraft.ec2.instance.name }}"
     with_items: "{{ instance_out.instance_ids }}"
-
-  # ec2_eip is NOT idempotent, so be careful
-  # have to wait for instance to be in a state that can be attached
-  - name: Wait for instance to start
-    wait_for:
-      port: 22
-      host: "{{ item.public_ip }}"
-      delay: 10
+  - name: Instance is running
+    ec2:
+      state: running
+      region: "{{ minecraft.ec2.region }}"
+      instance_ids: "{{ item.id }}"
+      wait: yes
     with_items: "{{ instance_out.instances }}"
-    when: instance_out.changed
+
+  - name: Get public ip in a form we can reason over (instead of null)
+    set_fact:
+      public_ip: "{{ item.public_ip }}"
+    with_items: "{{ instance_out.instances }}"
   - name: Create EIP for server
     ec2_eip:
       state: present
       region: "{{ minecraft.ec2.region }}"
-      device_id: "{{ item }}"
-    with_items: "{{ instance_out.instance_ids }}"
-    when: instance_out.changed
+      device_id: "{{ item.id }}"
+    with_items: "{{ instance_out.instances }}"
+    when: public_ip == ""
     register: eip_out
   - name: Tag EIP
     ec2_tag:
       state: present
       region: "{{ minecraft.ec2.region }}"
-      resource: "{{ eip_out.allocation_id }}"
+      resource: "{{ item.allocation_id }}"
       tags:
         Name: "{{ minecraft.ec2.eip.name }}"
+    with_items: "{{ eip_out.results }}"
+    when: eip_out is defined and eip_out.changed

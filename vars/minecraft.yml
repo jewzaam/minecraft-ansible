@@ -6,7 +6,7 @@ ec2:
   zone: us-east-1a
 
   instance:
-    id: i_minecraft_4
+    id: i_minecraft_8
     name: i_minecraft
     image: ami-b70554c8
     type: t2.micro
