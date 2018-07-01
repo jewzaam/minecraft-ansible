@@ -61,7 +61,6 @@ server:
   # note the scripts do not handle changing from forge back to vanilla
   type: forge
   # need to find a way to put this in safely
-  hostname: nope
   start_url: nope
   # you need to change this to whoever you want to alwasy be op, if any (you can remove otherwise)
   op:
@@ -78,10 +77,11 @@ ec2:
   zone: us-east-1a
 
   instance:
-    id: i_minecraft_9
+    id: i_minecraft_10
     name: i_minecraft
     image: ami-b70554c8
     type: t2.small
+    assign_public_ip: yes
   eip:
     name: eip_minecraft
   key:

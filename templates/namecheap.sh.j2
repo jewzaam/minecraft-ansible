@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# hit the namecheap server to upate the ip address
+PUBLIC_IP=`curl http://169.254.169.254/latest/meta-data/public-ipv4`
+curl "https://dynamicdns.park-your-domain.com/update?host={{ namecheap.host }}&domain={{ namecheap.domain }}&password={{ namecheap.password }}&ip=$PUBLIC_IP"

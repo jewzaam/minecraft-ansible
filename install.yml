@@ -19,6 +19,10 @@
     group:
       state: present
       name: "{{ minecraft.server.group }}"
+  - name: Make the minecraft directory
+    file:
+      state: directory
+      path: "{{ minecraft.server.directory }}"
   - name: Create user
     user:
       state: present
@@ -98,6 +102,12 @@
 
   - name: Install forge
     block:
+      - name: Make the mods directory
+        file:
+          state: directory
+          path: "{{ minecraft.server.directory }}/mods"
+          owner: "{{ minecraft.server.user }}"
+          group: "{{ minecraft.server.group }}"
       - name: Get forge-installer jar
         get_url:
           dest: "{{ minecraft.server.directory }}/{{ minecraft.forge.installer.filename }}"

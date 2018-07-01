@@ -1,0 +1,35 @@
+# vim: autoindent:expandtab:sw=2:ts=2
+---
+- name: Install Minecraft
+  hosts: all
+  become: yes
+  tasks:
+  - name: Variables
+    include_vars:
+      file: vars/minecraft.yml
+      name: minecraft
+
+  - name: Variables
+    include_vars:
+      file: vars/namecheap.yml
+      name: namecheap
+
+  - debug:
+      msg: "{{ namecheap.host }}"
+  - name: Create namecheap.sh
+    template:
+      src: templates/namecheap.sh.j2
+      dest: "{{ minecraft.server.directory }}/namecheap.sh"
+      owner: "{{ minecraft.server.user }}"
+      group: "{{ minecraft.server.group }}"
+      mode: 0744
+  - name: Create system service
+    template:
+      src: templates/namecheap.service.j2
+      dest: "/etc/systemd/system/namecheap.service"
+      mode: 0644
+  - name: Start namecheap service
+    service:
+      name: namecheap
+      enabled: yes
+      state: started

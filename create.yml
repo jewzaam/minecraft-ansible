@@ -68,7 +68,7 @@
     ec2:
       state: present
       region: "{{ minecraft.ec2.region }}"
-      assign_public_ip: no
+      assign_public_ip: "{{ minecraft.ec2.instance.assign_public_ip }}"
       count: 1
       group_id: "{{ group_out.group_id }}"
       id: "{{ minecraft.ec2.instance.id }}"

@@ -66,3 +66,27 @@ If you don't want random people joining your server you can turn on whitelist an
 /whitelist on
 /whitelist add <username>
 ```
+
+## Namecheap
+
+Obviously can't give you my namecheap stuff.  If you use namecheap you can leverage Dynamic DNS to update the instance when the public ip changes (i.e. it's started).
+
+Before you create your EC2 instance, set `minecraft.ec2.instance.assign_public_ip` to `yes` and create `vars/namecheap.yml` with your data:
+
+```
+# vim: autoindent:expandtab:sw=2:ts=2
+---
+namecheap:
+  host: minecraft
+  domain: your-domain.com
+  password: your-namecheap-ddns-password
+```
+
+and run the playbooks
+
+```
+ansible-playbook create.yml
+ansible-playbook install.yml
+ansible-playbook namecheap.yml
+ansible-playbook client.yml
+```
