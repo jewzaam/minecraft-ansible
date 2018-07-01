@@ -15,10 +15,17 @@
     with_items: "{{ minecraft.forge.mods }}"
     when:
       - minecraft.server.type == "forge"
-  - name: Create index.html
+  - name: Create info.html
     template:
-      src: templates/index.html.j2
-      dest: /tmp/index.html
+      src: templates/info.html.j2
+      dest: /tmp/info.html
+      mode: 0644
+    when:
+      - minecraft.server.type == "forge"
+  - name: Create info.md
+    template:
+      src: templates/info.md.j2
+      dest: /tmp/info.md
       mode: 0644
     when:
       - minecraft.server.type == "forge"

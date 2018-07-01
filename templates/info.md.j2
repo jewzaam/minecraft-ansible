@@ -1,0 +1,19 @@
+**Server Info**
+
+host: *{{ minecraft.server.hostname }}*
+
+Setup with <https://github.com/jewzaam/minecraft-ansible>.
+
+If the server is offline, it can be started with <{{ minecraft.server.start_url }}>.
+
+NOTE the server will shutdown after 5 to 10 minutes of inactivity
+
+**Forge Info**
+
+Version: {{ minecraft.server.version }}
+
+**Forge Mods**
+
+{% for mod in minecraft.forge.mods %}
+- {{ mod.name }} - <{{ mod.url }}>
+{% endfor %}
