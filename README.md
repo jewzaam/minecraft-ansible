@@ -16,7 +16,7 @@ Assumes you have setup AWS CLI.
 aws configure
 ```
 
-## Create Server
+## Create Infrastructure
 
 ```
 ansible-playbook create.yml
@@ -30,17 +30,28 @@ Will create an inventory file `.inventory` for use with server setup.  If this f
 ansible -i .inventory all -a "/bin/echo success"
 ```
 
-## Setup Minecraft
-
-TODO
-
-## Teardown Server
+## Teardown Instance
 
 Only tears down the instance & EIP at this time.
 
 ```
 ansible-playbook teardown.yml
 ```
+
+## Setup Minecraft Server
+
+```
+ansible-playbook install.yml
+```
+
+## Setup Minecraft Client
+
+Installs mods, same as server, and creates /tmp/index.html with some server info.
+
+```
+ansible-playbook client.yml
+```
+
 
 # Gotyas
 

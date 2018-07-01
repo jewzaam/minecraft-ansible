@@ -1,0 +1,22 @@
+<html>
+<body>
+<h1>Server Info</h1>
+<p>host: <b>{{ minecraft.server.hostname }}</b></p>
+<p>Setup with <a href="https://github.com/jewzaam/minecraft-ansible">jewzaam's minecraft-ansible</a>.<p>
+<p>If the server is offline, it can be started with <a href="{{ minecraft.server.start_url }}">this link</a>.</p>
+<p>NOTE the server will shutdown after 5 to 10 minutes of inactivity.</p>
+
+<h1>Forge Info</h1>
+
+<p>Version: {{ minecraft.server.version }}</p>
+
+<h2>Mods</h2>
+
+<ul>
+{% for mod in minecraft.forge.mods %}
+<li><a href="{{ mod.url }}">{{ mod.name }}</a></li>
+{% endfor %}
+</ul>
+
+</body>
+</html>

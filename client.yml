@@ -1,0 +1,25 @@
+# vim: autoindent:expandtab:sw=2:ts=2
+---
+- name: Setup Minecraft Client
+  hosts: localhost
+  become: no
+  tasks:
+  - name: Variables
+    include_vars:
+      file: vars/minecraft.yml
+      name: minecraft
+  - name: Install Mods
+    get_url:
+      dest: "{{ minecraft.client.directory }}/mods/{{ item.filename }}"
+      url: "{{ item.url }}"
+    with_items: "{{ minecraft.forge.mods }}"
+    when:
+      - minecraft.server.type == "forge"
+  - name: Create index.html
+    template:
+      src: templates/index.html.j2
+      dest: /tmp/index.html
+      mode: 0644
+    when:
+      - minecraft.server.type == "forge"
+

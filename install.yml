@@ -132,11 +132,11 @@
     block:
       - name: Install Mods
         get_url:
-          dest: "{{ minecraft.server.directory }}/mods
+          dest: "{{ minecraft.server.directory }}/mods/{{ item.filename }}"
           owner: "{{ minecraft.server.user }}"
           group: "{{ minecraft.server.group }}"
           url: "{{ item.url }}"
-        with_items: minecraft.server.mods
+        with_items: "{{ minecraft.forge.mods }}"
     when:
       - minecraft.server.type == "forge"
 
@@ -180,12 +180,3 @@
           name: minecraft
           enabled: yes
           state: started
-
-
-
-
-
-
-
-
-
