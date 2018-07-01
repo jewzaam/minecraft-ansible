@@ -53,6 +53,16 @@ ansible-playbook client.yml
 ```
 
 
-# Gotyas
+# Troubleshoot
 
+## EC2 Instance ID
 If you need to recreate your server you'll probably hit a problem of reusing the same `id` for the ec2 instance.  To get around this, edit `var/minecraft.yml` and change the value of `ec2.instance.id` to something that hasn't been used in the last 24 hours.
+
+## Whitelist
+
+If you don't want random people joining your server you can turn on whitelist and add only friends.  In the server as an op:
+
+```
+/whitelist on
+/whitelist add <username>
+```
