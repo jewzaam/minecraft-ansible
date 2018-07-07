@@ -1,0 +1,26 @@
+# vim: autoindent:expandtab:sw=2:ts=2
+---
+- name: Update local inventory
+  hosts: localhost
+  tasks:
+  - name: Variables
+    include_vars:
+      file: vars/minecraft.yml
+      name: minecraft
+
+  - name: Find instance
+    ec2_instance_facts:
+      region: "{{ minecraft.ec2.region }}"
+      filters:
+        "tag:Name": "{{ minecraft.ec2.instance.name }}"
+    register: instance_out
+
+  - name: Set public_ip (fails if not available, probably instance offline)
+    set_fact:
+      public_ip: "{{ item.public_ip_address }}"
+    with_items: "{{ instance_out.instances }}"
+
+  - name: Write inventory file
+    copy:
+      content: "{{ public_ip }} ansible_user=ec2-user ansible_ssh_private_key_file={{ minecraft.ec2.key.pri_filename }}"
+      dest: .inventory

@@ -41,6 +41,7 @@ ansible-playbook teardown.yml
 ## Setup Minecraft Server
 
 ```
+ansible-playbook inventory.yml
 ansible-playbook install.yml
 ```
 
@@ -83,7 +84,7 @@ Host <your minecraft server DDNS entry>
 Public IP has changed.  Need to refresh your `.inventory` file:
 
 ```
-ansible-playbook create.yml
+ansible-playbook inventory.yml
 ```
 
 ## Namecheap
