@@ -122,6 +122,23 @@
     with_items: "{{ eip_out.results }}"
     when: eip_out is defined and eip_out.changed
 
+#  - name: Setup CloudWatch alarm to stop instance
+#    ec2_metric_alarm:
+#      state: present
+#      region: "{{ minecraft.ec2.region }}"
+#      alarm_actions: Stop
+#      evaluation_periods: 1
+#      metric: NetworkIn
+#      name: alarm_minecraft_low_network_stop
+#      period: 300
+#      unit: Bytes
+#      threshold: 1000
+#      comparison: "<"
+#      dimensions: {'InstanceId': "{{ item.id }}"}
+#      statistic: Average
+#    with_items: "{{ instance_out.instances }}"
+#    when: minecraft.server.stop_when is defined
+
   - name: Write inventory file
     copy:
       content: "{{ public_ip }} ansible_user=ec2-user ansible_ssh_private_key_file={{ minecraft.ec2.key.pri_filename }}"

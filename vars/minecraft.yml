@@ -68,6 +68,8 @@ server:
     # https://mcuuid.net/?q=jewzaam
     uuid: c494ab34-d9e9-4d02-867c-a3f52702840e
     level: 4
+  # to disable automatic stop, remove this section
+  stop_when: 1
 
 client:
   directory: ~/.minecraft

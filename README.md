@@ -78,6 +78,14 @@ Host <your minecraft server DDNS entry>
         IdentityFile ~/.ssh/id_rsa_minecraft
 ```
 
+## UNREACHABLE!
+
+Public IP has changed.  Need to refresh your `.inventory` file:
+
+```
+ansible-playbook create.yml
+```
+
 ## Namecheap
 
 Obviously can't give you my namecheap stuff.  If you use namecheap you can leverage Dynamic DNS to update the instance when the public ip changes (i.e. it's started).
