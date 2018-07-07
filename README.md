@@ -67,6 +67,17 @@ If you don't want random people joining your server you can turn on whitelist an
 /whitelist add <username>
 ```
 
+## SSH Known Hosts
+
+With a dynamic IP address you'll have to manually cleanup known_hosts, ssh to the IP, or configure ssh to not check host IP.  For example, in `~/.ssh/config`:
+
+```
+Host <your minecraft server DDNS entry>
+        CheckHostIP no
+        User ec2-user
+        IdentityFile ~/.ssh/id_rsa_minecraft
+```
+
 ## Namecheap
 
 Obviously can't give you my namecheap stuff.  If you use namecheap you can leverage Dynamic DNS to update the instance when the public ip changes (i.e. it's started).
@@ -76,10 +87,9 @@ Before you create your EC2 instance, set `minecraft.ec2.instance.assign_public_i
 ```
 # vim: autoindent:expandtab:sw=2:ts=2
 ---
-namecheap:
-  host: minecraft
-  domain: your-domain.com
-  password: your-namecheap-ddns-password
+host: minecraft
+domain: your-domain.com
+password: your-namecheap-ddns-password
 ```
 
 and run the playbooks
